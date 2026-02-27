@@ -3,6 +3,9 @@
 .ralph/current_prompt.md
 .ralph/progress.md
 .ralph/security-report.md
+.ralph/worktrees/
+.ralph/planning_prompt_r*.md
+.ralph/planning_output_r*.md
 
 # Commit this one to share learned failure patterns:
 # .ralph/guardrails.md  ← intentionally NOT ignored

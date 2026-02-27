@@ -9,6 +9,7 @@
 > - Task descriptions must be specific and verifiable
 > - Use IDs like E1-T1, E2-T3 — never dots or spaces in IDs
 > - Every task ID must have an entry in docs/DOC-INDEX.md
+> - Add `[parallel]` to an epic header to run its tasks concurrently
 
 ---
 
@@ -18,7 +19,12 @@
 - [ ] **E1-T2** Add core dependencies and build configuration
 - [ ] **E1-T3** Write initial unit test scaffold and CI verification
 
-## Epic 2 — Core Feature
+## Epic 2 — Core Feature [parallel]
+
+<!-- Tasks in a [parallel] epic are run concurrently by the orchestrator.
+     Each task gets its own git worktree. After all workers finish, branches
+     are merged and VERIFY_STEPS runs once on the merged state.
+     Use [parallel] for independent tasks that don't share files. -->
 
 - [ ] **E2-T1** Implement <core feature name> with basic functionality
 - [ ] **E2-T2** Add error handling and edge case coverage for <feature>

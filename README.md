@@ -68,15 +68,36 @@ python ralph.py             # run autonomously
 ## CLI reference
 
 ```
-python ralph.py               # run the loop (autonomous)
-python ralph.py --dry-run     # preview next task and prompt, no agent call
-python ralph.py --status      # show progress summary
-python ralph.py --task E2-T3  # run a specific task only
-python ralph.py --reset       # clear .ralph/ state and start fresh
-python ralph.py --no-plan     # disable planning mode (finite, tasks only)
-python ralph.py --no-security # disable security audit gate
-python ralph.py --security-only  # run security audit without executing tasks
+python ralph.py                     # run the loop (parallel + planning)
+python ralph.py --dry-run           # preview next task/batch and prompt
+python ralph.py --status            # show progress summary
+python ralph.py --task E2-T3        # run a specific task only (sequential)
+python ralph.py --reset             # clear .ralph/ state and start fresh
+python ralph.py --no-plan           # disable planning mode (finite, tasks only)
+python ralph.py --no-parallel       # force sequential mode (disable parallel)
+python ralph.py --max-parallel 8    # allow up to 8 concurrent workers
 ```
+
+## Parallel execution
+
+Add `[parallel]` to an epic header to run its tasks concurrently:
+
+```markdown
+## Epic 2 — Scanners [parallel]
+
+- [ ] **E2-T1** Implement AppCacheScanner
+- [ ] **E2-T2** Implement SystemCacheScanner
+- [ ] **E2-T3** Implement LogsScanner
+```
+
+The orchestrator:
+1. Creates a git worktree per task (`.ralph/worktrees/E2-T1/`, etc.)
+2. Runs all workers simultaneously with prefixed output (`[E2-T1] ...`, `[E2-T2] ...`)
+3. Merges successful branches sequentially into the main tree
+4. Runs `VERIFY_STEPS` once on the merged state
+5. Marks all passing tasks done; reverts and re-queues failed ones
+
+Tasks in different epics are always sequential. Only tasks within the same `[parallel]` epic run concurrently. Use `[parallel]` for independent tasks that don't modify the same files.
 
 ## Generated file structure
 
@@ -105,9 +126,16 @@ your-project/
 
 ## Epic 1 — Foundation
 
-- [ ] **E1-T1** Create the package structure with SPM
-- [ ] **E1-T2** Add Swift ArgumentParser dependency
+- [ ] **E1-T1** Create the package structure
+- [ ] **E1-T2** Add core dependencies
 - [x] **E1-T3** Write initial unit test scaffold   ← done
+
+## Epic 2 — Scanners [parallel]
+
+<!-- Tasks run concurrently — each gets its own git worktree -->
+- [ ] **E2-T1** Implement AppCacheScanner
+- [ ] **E2-T2** Implement SystemCacheScanner
+- [ ] **E2-T3** Implement LogsScanner
 ```
 
 ## DOC-INDEX.md format
@@ -181,6 +209,7 @@ The loop includes 6 security hardening measures to prevent prompt injection and 
 
 | Tag | Description |
 |-----|-------------|
+| [v1.2.0](https://github.com/vansearch/ralphloop-implementation/releases/tag/v1.2.0) | Parallel orchestrator: git worktrees, ThreadPoolExecutor, `[parallel]` tag |
 | [v1.1.0](https://github.com/vansearch/ralphloop-implementation/releases/tag/v1.1.0) | Full restore: ralph.py, setup.py, templates, README |
 | [v1.0.0](https://github.com/vansearch/ralphloop-implementation/releases/tag/v1.0.0) | Initial stable release (SKILL.md only) |
 

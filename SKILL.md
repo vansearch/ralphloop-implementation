@@ -74,13 +74,22 @@ The task file must follow this exact format:
 > Format: `- [ ] **EPIC-TASK** Description`
 > The ralph.py script reads this file to drive the loop.
 > Mark tasks done with `[x]` — or let the agent do it automatically.
+> Add `[parallel]` to an epic header to run its tasks concurrently.
 
 ---
 
-## Epic 1 — <Epic Name>
+## Epic 1 — Foundation
 
 - [ ] **E1-T1** <Task description — specific and actionable>
 - [ ] **E1-T2** <Task description>
+
+## Epic 2 — <Feature Name> [parallel]
+
+<!-- Tasks in a [parallel] epic run concurrently via git worktrees.
+     Use for independent tasks that don't touch the same files. -->
+- [ ] **E2-T1** <Independent task A>
+- [ ] **E2-T2** <Independent task B>
+- [ ] **E2-T3** <Independent task C>
 ```
 
 Rules for tasks:
@@ -89,6 +98,7 @@ Rules for tasks:
 - Tasks within an epic should be **independent** (minimal interdependence)
 - Epics map to logical feature areas (Foundation, Core Engine, CLI, UI, etc.)
 - Use IDs like `E1-T1`, `E2-T3` — never use dots or spaces in IDs
+- Add `[parallel]` to an epic header to run its tasks concurrently (good for scanners, handlers, plugins — things that are independent and don't share files)
 
 If a task list already exists in another format, convert it to this format.
 
