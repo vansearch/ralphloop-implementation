@@ -496,6 +496,25 @@ Think step by step:
 3. What is the next most important thing for a real user?
 4. Are there any bugs or rough edges from the git log?
 
+Before generating tasks, complete **Phase 0** below.
+
+---
+
+## Phase 0 — Explore the Codebase First
+
+Exploration is cheap here — planning runs once, workers run N times.
+Use your tools (Glob, Read) to understand the codebase before writing any task:
+
+1. Find protocol/interface/base class files that new components must implement.
+   Search for filenames containing *Protocol*, *Base*, *Interface*, or check ARCHITECTURE.md.
+2. Read 1–2 existing implementations to understand the exact pattern to follow.
+3. Find where new components get registered (registries, factory arrays, init files).
+4. Note the file naming convention and exact directory structure in use.
+
+Only after exploring, proceed to Steps A–D.
+
+---
+
 Then:
 
 **Step A — Append new tasks to `TASKS.md`**
@@ -506,23 +525,45 @@ Use EXACTLY this format, with the next available epic number ({next_epic}):
 
 ## Epic {next_epic} — <descriptive epic name>
 
-- [ ] **E{next_epic}-T1** <specific, single-session, verifiable task>
-- [ ] **E{next_epic}-T2** <specific, single-session, verifiable task>
+- [ ] **E{next_epic}-T1** Create `Sources/App/Module/NewComponent.swift` implementing
+  `ComponentProtocol` (`Sources/App/Protocols/ComponentProtocol.swift`).
+  Scan/process <what it targets>. Register in `ComponentRegistry.all`
+  (`Sources/App/ComponentRegistry.swift`). Return `[ResultType]` sorted by size.
+- [ ] **E{next_epic}-T2** Modify `Sources/App/CLI/SomeCommand.swift` (`func run()`, ~line 45)
+  to add `--flag` option. When set: <expected behaviour>. No new files needed.
 ```
 
+**Contract format — every task description MUST include:**
+- **Action verb:** Create / Modify / Add / Fix
+- **Exact file path** (relative to project root) to create or change
+- **Interface/protocol to implement**, with its source file in parentheses
+- **Where to register/wire up** the new component (file + array/function name)
+- **Expected behaviour or output** (what it does, what it returns)
+
 Generate 5–10 tasks. Each must be:
-- Specific enough to implement in one claude session
+- A "contract" a worker can execute without exploring the codebase
 - Verifiable with the project's build + test commands
 - Not already done (check the completed list above)
 
 **Step B — Append routing entries to `docs/DOC-INDEX.md`**
 
+Map each task to the section(s) that **contain** the protocol/interface definition
+or API the worker must use — not sections that merely mention it.
+
+Before mapping, verify each section:
+1. Read the doc file
+2. Find the exact `## Section Name` heading
+3. Confirm the section contains the struct/protocol/function signature the worker needs
+
 Inside the existing triple-backtick block in the routing table, append one line per task:
 
 ```
-E{next_epic}-T1 | ARCHITECTURE.md:Core Components
-E{next_epic}-T2 | DATA-MODELS.md:Schema | ARCHITECTURE.md:Core Components
+E{next_epic}-T1 | ARCHITECTURE.md:ComponentProtocol | TECH-STACK.md:FileManager APIs
+E{next_epic}-T2 | ARCHITECTURE.md:CLI Layer
 ```
+
+Use at most 2–3 sections per task. Each section listed must **contain** the definition,
+not just reference it.
 
 **Step C — Commit the planning changes**
 

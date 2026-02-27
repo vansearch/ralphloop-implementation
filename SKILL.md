@@ -66,6 +66,20 @@ Answer these questions to yourself:
 
 ## Step 2 — Create or validate `TASKS.md`
 
+**Before writing TASKS.md, explore the project structure first:**
+
+1. Read `Package.swift` / `pyproject.toml` / `package.json` / `Cargo.toml` to understand
+   targets, modules, and dependencies.
+2. Find protocol/interface/base class files that new components must implement
+   (search for filenames containing *Protocol*, *Base*, *Interface*).
+3. Read 1–2 existing implementations to understand the exact pattern to follow.
+4. Find registry or factory files where new components get registered
+   (arrays like `allScanners`, `registeredHandlers`, etc.).
+
+This exploration is done **once** by you — so each worker can execute without
+repeating it. Tasks that specify exact file paths and interfaces cost ~10x fewer
+tokens per worker than tasks that leave the worker to discover the same information.
+
 The task file must follow this exact format:
 
 ```markdown
@@ -80,25 +94,41 @@ The task file must follow this exact format:
 
 ## Epic 1 — Foundation
 
-- [ ] **E1-T1** <Task description — specific and actionable>
-- [ ] **E1-T2** <Task description>
+- [ ] **E1-T1** Create `Sources/App/Protocols/ComponentProtocol.swift` defining the
+  `ComponentProtocol` with `func scan() async throws -> [ScanResult]` and
+  `var category: ScanCategory { get }`. No registration needed — this is the interface.
+- [ ] **E1-T2** Modify `Sources/App/AppCore.swift` (`func bootstrap()`, ~line 12) to
+  initialise `ComponentRegistry` and call `registerAll()`. No new files needed.
 
 ## Epic 2 — <Feature Name> [parallel]
 
 <!-- Tasks in a [parallel] epic run concurrently via git worktrees.
      Use for independent tasks that don't touch the same files. -->
-- [ ] **E2-T1** <Independent task A>
-- [ ] **E2-T2** <Independent task B>
-- [ ] **E2-T3** <Independent task C>
+- [ ] **E2-T1** Create `Sources/App/Scanners/FooScanner.swift` implementing
+  `ComponentProtocol` (`Sources/App/Protocols/ComponentProtocol.swift`).
+  Scan `~/Library/Caches/com.foo/`. Register in `ComponentRegistry.all`
+  (`Sources/App/ComponentRegistry.swift`). Return `[ScanResult]` sorted by size.
+- [ ] **E2-T2** Create `Sources/App/Scanners/BarScanner.swift` (same pattern as FooScanner).
+  Scan `~/Library/Application Support/com.bar/`. Register in `ComponentRegistry.all`.
+- [ ] **E2-T3** Create `Sources/App/Scanners/BazScanner.swift` (same pattern as FooScanner).
+  Scan `~/Library/Logs/com.baz/`. Register in `ComponentRegistry.all`.
 ```
 
-Rules for tasks:
+Rules for tasks — **contract format** (each description must include all of these):
+- **Action verb:** Create / Modify / Add / Fix
+- **Exact file path** (relative to project root) to create or change
+- **Interface/protocol to implement**, with its source file in parentheses
+- **Where to register/wire up** the new component (file + array/function name)
+- **Expected behaviour or output** (what it does, what it returns)
+
+Additional rules:
 - Each task should be implementable in **one coding session** (< 2 hours)
-- Task descriptions must be **specific and verifiable** (not "improve the code")
+- A "contract" task: worker can execute without exploring the codebase at all
 - Tasks within an epic should be **independent** (minimal interdependence)
 - Epics map to logical feature areas (Foundation, Core Engine, CLI, UI, etc.)
 - Use IDs like `E1-T1`, `E2-T3` — never use dots or spaces in IDs
-- Add `[parallel]` to an epic header to run its tasks concurrently (good for scanners, handlers, plugins — things that are independent and don't share files)
+- Add `[parallel]` to an epic header to run its tasks concurrently (good for scanners,
+  handlers, plugins — things that are independent and don't share files)
 
 If a task list already exists in another format, convert it to this format.
 
@@ -141,6 +171,11 @@ Rules for the routing table:
 - Every task in `TASKS.md` must have an entry here
 - Use at most **2-3 sections per task** — more is waste
 - Section names must match exactly the `## Section Name` headings in the docs
+- Each mapped section must **contain** the protocol/struct definition the worker needs —
+  not just mention it. Read the section yourself before mapping to verify it has the
+  actual code (interface signature, struct fields, function body) the worker needs.
+- If the section only references the definition ("see Scanner Protocol elsewhere"),
+  find the section that has the actual code and map to that instead.
 - If no docs exist yet, use `ARCHITECTURE.md:Overview` as a placeholder
 
 ---
