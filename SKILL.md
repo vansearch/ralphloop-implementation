@@ -483,13 +483,13 @@ def count_retries(task_id: str) -> int:
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# AGENT RUNNER
+# CLAUDE RUNNER
 # ══════════════════════════════════════════════════════════════════════════════
 
-def run_agent(prompt: str) -> tuple[bool, str]:
+def run_claude(prompt: str) -> tuple[bool, str]:
     PROMPT_FILE.write_text(prompt)
     result = subprocess.run(
-        ["agent", "--print", "--dangerously-skip-permissions", prompt],
+        ["claude", "--print", "--dangerously-skip-permissions", prompt],
         capture_output=True, text=True, cwd=ROOT
     )
     return result.returncode == 0, result.stdout + result.stderr
@@ -664,9 +664,9 @@ def run_security_audit() -> int:
     prompt = build_security_prompt(done_tasks)
     PROMPT_FILE.write_text(prompt)
 
-    print(f"  {DIM}Running security agent...{RESET}", end="", flush=True)
-    ok, output = run_agent(prompt)
-    print(f"\r  {DIM}Security agent finished.   {RESET}")
+    print(f"  {DIM}Running security auditor...{RESET}", end="", flush=True)
+    ok, output = run_claude(prompt)
+    print(f"\r  {DIM}Security auditor finished.   {RESET}")
 
     # Save report
     SECURITY_REPORT.write_text(output)
@@ -791,7 +791,7 @@ def run_loop(dry_run: bool = False, specific_task: str | None = None):
             break
 
         print(f"      {DIM}Running agent...{RESET}", end="", flush=True)
-        agent_ok, agent_output = run_agent(prompt)
+        claude_ok, claude_output = run_claude(prompt)
         print(f"\r      {DIM}Agent finished.   {RESET}")
 
         print(f"      {DIM}Verifying...{RESET}", end="", flush=True)
@@ -949,7 +949,7 @@ while tasks_remain:
     task = next_pending_task()
     context = extract_doc_sections(task.id)  ← only relevant sections
     prompt = build_prompt(task, context)
-    output = run_agent(prompt)
+    output = run_claude(prompt)
     if verify():
         mark_done(task.id)
     else:
