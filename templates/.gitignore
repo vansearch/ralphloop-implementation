@@ -1,0 +1,8 @@
+# Ralph Loop state (do not commit these)
+.ralph/activity.log
+.ralph/current_prompt.md
+.ralph/progress.md
+.ralph/security-report.md
+
+# Commit this one to share learned failure patterns:
+# .ralph/guardrails.md  ← intentionally NOT ignored
